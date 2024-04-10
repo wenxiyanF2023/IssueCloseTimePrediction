@@ -13,21 +13,14 @@ from transformers import BertTokenizer, BertModel
 import torch
 from flask_cors import CORS
 import os
+import gdown
 
-MODEL_URL = 'https://drive.google.com/file/d/1yV2ruB2b6L6Y1lnY_E_daDCPBxntrDuZ/view?usp=sharing'
+MODEL_URL = 'https://drive.google.com/uc?id=1FjwjLcrNtRBx6JO0fi7a6_qSCDmenXWx'
 MODEL_PATH = 'random_forest_model.joblib'
 
-def download_model(url, path):
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(path, 'wb') as f:
-            f.write(response.content)
-    else:
-        raise Exception(f"Failed to download model: {response.status_code}")
-
-# Download model if it doesn't exist
+# Download the model if it doesn't exist
 if not os.path.exists(MODEL_PATH):
-    download_model(MODEL_URL, MODEL_PATH)
+    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
 
 app = Flask(__name__)
 CORS(app)
