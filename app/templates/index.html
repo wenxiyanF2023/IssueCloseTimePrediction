@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Issue Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #edf2f7;
+            margin: 0;
+            padding: 40px 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2b2d42;
+        }
+        p {
+            font-size: 14px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e0;
+            box-sizing: border-box;
+        }
+        .predict-button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #79a0e3;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .predict-button:hover {
+            background-color: #4173b8;
+        }
+        #result {
+            margin-top: 20px;
+            display: none;
+            padding: 15px;
+            background-color: #f0fdf4;
+            color: #79a0e3;
+            border-left: 5px solid #79a0e3;
+            border-radius: 5px;
+        }
+        .disclaimer {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>GitHub Issue Closure Time Prediction</h2>
+        <p>Enter the URL of a public GitHub issue:</p>
+        <input type="text" id="issue_url" class="input-field" placeholder="Enter GitHub Issue URL here">
+        <button onclick="predictTimeToClose()" class="predict-button">Predict Time</button>
+        <div id="result"></div>
+        <p class="disclaimer">*Please note: Currently, we only accept issues from public repositories.</p>
+    </div>
+
+    <script>
+        function predictTimeToClose() {
+            var issueUrl = $('#issue_url').val();
+            $.ajax({
+                url: 'http://127.0.0.1:5000/predict',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ "issue_url": issueUrl }),
+                beforeSend: function() {
+                    $('#result').show().html('Predicting...');
+                },
+                success: function(response) {
+                    var predictedHours = response.predicted_time_to_close_hours;
+                    var displayTime;
+                    
+                    // Check if predicted time exceeds 24 hours
+                    if (predictedHours > 24) {
+                        var days = Math.floor(predictedHours / 24);
+                        var hours = (predictedHours % 24).toFixed(2); // Truncate to 2 decimal places
+                        displayTime = days + ' day' + (days > 1 ? 's' : '') + ' ' + hours + ' hour' + (hours !== "1.00" ? 's' : '');
+                    } else {
+                        displayTime = predictedHours.toFixed(2) + ' hour' + (predictedHours.toFixed(2) !== "1.00" ? 's' : ''); // Apply truncation here too
+                    }
+                    
+                    $('#result').html('Predicted time to close: ' + displayTime);
+                },
+                error: function(error) {
+                    $('#result').html('Error predicting time to close. Make sure the backend is running and accessible.');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#issue_url').val(''); // Clear the input field on page refresh
+        });
+    </script>
+</body>
+</html>
